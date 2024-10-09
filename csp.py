@@ -172,7 +172,6 @@ def sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
     assignment = {}
     queue = initialize_queue(neighbors)
 
-    # TODO: Complete the initialization of the neighbors and queue data structures
 
     # Initialize the assignment for any squares with domains of size 1 (e.g., pre-specified squares).
     # While not necessary for correctness, initializing the assignment improves performance, especially
