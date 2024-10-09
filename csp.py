@@ -114,11 +114,11 @@ def get_all_neighbors() -> List[List[int]]:
     return all_neighbors
 
 
-def initialize_queue(neighbors: List[List[int]]) -> Set[Tuple[int, int]]:
+def initialize_queue(all_neighbors: List[List[int]]) -> Set[Tuple[int, int]]:
     queue = set()
-    for i in range(len(neighbors)):
-        for j in neighbors[i]:
-            queue.add((i, j))
+    for Xi in range(len(all_neighbors)): # for each space in the board
+        for Xj in all_neighbors[Xi]: # for each neighbor of the space
+            queue.add((Xi, Xj))
     return queue
     
 def print_board(board: List[int]) -> None:
@@ -170,7 +170,7 @@ def sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
     domains = [[val] if val else list(DOMAIN) for val in board] # list of domains for each variable
     neighbors = get_all_neighbors()
     assignment = {}
-    queue = set()
+    queue = initialize_queue(neighbors)
 
     # TODO: Complete the initialization of the neighbors and queue data structures
 
