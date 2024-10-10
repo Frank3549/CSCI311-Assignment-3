@@ -154,6 +154,33 @@ def backtracking_search(
     if not unassigned_variables:
         return assignment
     
+    variable = unassigned_variables.pop()
+    for value in domains[variable]:
+        if is_conflicting(variable, value, assignment, neighbors):
+            assignment[variable] = value
+            result = backtracking_search(neighbors, queue, domains, assignment)
+            if result:
+                return result
+            assignment[variable] = 0
+
+def is_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
+    """
+    Check if a value assignment is consistent with the current assignment
+    
+    Args:
+        variable (int): Variable assigned a value
+        value (int): Value to be assigned
+        assignment (Dict[int, int]): Current variable->value assignment
+        neighbors (List[List[int]]): Indices of neighbors for each variable
+    
+    Returns:
+        bool: True if the assignment is consistent, False otherwise
+    """
+    # See if assigned value of a neighbor is the same as the value we are trying to assign for all neighbors
+    for neighbor in neighbors[variable]:
+        if assignment[neighbor] == value: 
+            return False
+    return True    
     
 def return_unassigned(assignment: Dict[int, int]) -> Set[int]:
     """
