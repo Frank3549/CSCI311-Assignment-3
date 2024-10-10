@@ -149,7 +149,25 @@ def backtracking_search(
         Optional[Dict[int, int]]: Solution or None indicating no solution found
     """
     # TODO: Implement the backtracking search algorithm here
-    return None
+    unassigned_variables = return_unassigned(assignment)
+
+    if not unassigned_variables:
+        return assignment
+    
+    
+def return_unassigned(assignment: Dict[int, int]) -> Set[int]:
+    """
+    returns a list of unassigned variables in the assignment
+    
+    Args: Assignment (Dict[int, int]): Current variable->value assignment
+    
+    Returns: List[int]: List of unassigned variables (their indices)
+    """
+    unassigned = set() 
+    for key in assignment:
+        if assignment[key] == 0:
+            unassigned.add(key)
+    
 
 
 
