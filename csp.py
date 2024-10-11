@@ -156,14 +156,15 @@ def backtracking_search(
     
     variable = unassigned_variables.pop()
     for value in domains[variable]:
-        if is_conflicting(variable, value, assignment, neighbors):
-            assignment[variable] = value
-            result = backtracking_search(neighbors, queue, domains, assignment)
+        if not is_value_conflicting(variable, value, assignment, neighbors):
+            new_assignment  = assignment.copy()
+            new_assignment[variable] = value
+            result = backtracking_search(neighbors, queue, domains, new_assignment)
             if result:
                 return result
-            assignment[variable] = 0
+    return None # no solution found
 
-def is_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
+def is_value_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
     """
     Check if a value assignment is consistent with the current assignment
     
@@ -214,7 +215,6 @@ def sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
 
     domains = [[val] if val else list(DOMAIN) for val in board] # list of domains for each variable
     neighbors = get_all_neighbors()
-    assignment = {}
     queue = initialize_queue(neighbors)
 
 
