@@ -149,22 +149,22 @@ def backtracking_search(
         Optional[Dict[int, int]]: Solution or None indicating no solution found
     """
     # TODO: Implement the backtracking search algorithm here
-    unassigned_variables = return_unassigned(assignment)
 
-    if not unassigned_variables:
+    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
         return assignment
     
-    variable = unassigned_variables.pop()
+    variable = return_unassigned(assignment).pop() 
     for value in domains[variable]:
-        if not is_value_conflicting(variable, value, assignment, neighbors):
+        if value_not_conflicting(variable, value, assignment, neighbors):
             new_assignment  = assignment.copy()
             new_assignment[variable] = value
             result = backtracking_search(neighbors, queue, domains, new_assignment)
             if result:
                 return result
+            new_assignment[variable] = 0 # undo assignment
     return None # no solution found
 
-def is_value_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
+def value_not_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
     """
     Check if a value assignment is consistent with the current assignment
     
@@ -179,11 +179,11 @@ def is_value_conflicting(variable: int, value: int, assignment: Dict[int, int], 
     """
     # See if assigned value of a neighbor is the same as the value we are trying to assign for all neighbors
     for neighbor in neighbors[variable]:
-        if assignment[neighbor] == value: 
+        if (neighbor in assignment.keys()) and assignment[neighbor] == value: # avoiding key error by checking if neighbor is in assignment first
             return False
     return True    
     
-def return_unassigned(assignment: Dict[int, int]) -> Set[int]:
+def return_unassigned(assignment: Dict[int, int]) -> List[int]:
     """
     returns a list of unassigned variables in the assignment
     
@@ -191,10 +191,25 @@ def return_unassigned(assignment: Dict[int, int]) -> Set[int]:
     
     Returns: List[int]: List of unassigned variables (their indices)
     """
-    unassigned = set() 
-    for key in assignment:
-        if assignment[key] == 0:
-            unassigned.add(key)
+    unassigned: List[int] = [] 
+    for variable in range(SIDE**2):
+        if variable not in assignment.keys(): 
+            unassigned.append(variable)
+    return unassigned
+
+def is_assignment_complete(assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
+    """
+    Check if the assignment is complete
+    
+    Args: Assignment (Dict[int, int]): Current variable->value assignment
+    
+    Returns: bool: True if the assignment is complete, False otherwise
+    """
+    for variable in range(SIDE**2):
+        value = assignment[variable]
+        if value_not_conflicting(variable, value, assignment, neighbors) == False:
+            return False
+
     
 
 
