@@ -125,6 +125,28 @@ def print_board(board: List[int]) -> None:
     for i in range(SIDE):
         print(board[i*SIDE:(i+1)*SIDE])
     print()
+
+def revise(
+    Xi: int, Xj: int, domains: List[List[int]], assignment: Dict[int, int]
+) -> bool:
+    """Revise the domain of Xi based on the domain of Xj
+
+    Args:
+        Xi (int): Index of variable
+        Xj (int): Index of variable
+        domains (List[List[int]]): Domains for each variable
+        assignment (Dict[int, int]): Current variable->value assignment
+
+    Returns:
+        bool: True if the domain of Xi is revised, False otherwise
+    """
+    revised = False
+
+    for value in domains[Xi]:
+        if value in domains[Xj] and (value == assignment[Xj] or len(domains[Xj]) == 1): # if this value is already assigned, or "Value" is the only option for Xj
+            domains[Xi].remove(value)
+            revised = True
+    return revised
     
         
             
@@ -196,19 +218,6 @@ def return_unassigned(assignment: Dict[int, int]) -> List[int]:
         if variable not in assignment.keys(): 
             unassigned.append(variable)
     return unassigned
-
-def is_assignment_complete(assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
-    """
-    Check if the assignment is complete
-    
-    Args: Assignment (Dict[int, int]): Current variable->value assignment
-    
-    Returns: bool: True if the assignment is complete, False otherwise
-    """
-    for variable in range(SIDE**2):
-        value = assignment[variable]
-        if value_not_conflicting(variable, value, assignment, neighbors) == False:
-            return False
 
     
 
