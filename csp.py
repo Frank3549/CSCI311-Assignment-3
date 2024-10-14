@@ -85,6 +85,10 @@ def countcalls(func):
 
     return wrapper
 
+def print_board(board: List[int]) -> None:
+    for i in range(SIDE):
+        print(board[i*SIDE:(i+1)*SIDE])
+    print()
 
 def get_all_neighbors() -> List[List[int]]:
     """
@@ -121,10 +125,6 @@ def initialize_queue(all_neighbors: List[List[int]]) -> Set[Tuple[int, int]]:
             queue.add((Xi, Xj))
     return queue
     
-def print_board(board: List[int]) -> None:
-    for i in range(SIDE):
-        print(board[i*SIDE:(i+1)*SIDE])
-    print()
 
 def revise(
     Xi: int, Xj: int, domains: List[List[int]], assignment: Dict[int, int]
@@ -143,49 +143,12 @@ def revise(
     revised = False
 
     for value in domains[Xi]:
-        if value in domains[Xj] and (value == assignment[Xj] or len(domains[Xj]) == 1): # if this value is already assigned, or "Value" is the only option for Xj
+        if value in domains[Xj] and Xj in assignment.keys() and (value == assignment[Xj] or len(domains[Xj]) == 1): # if this value is already assigned, or "Value" is the only option for Xj
             domains[Xi].remove(value)
             revised = True
     return revised
     
-        
-            
-# The @countcalls decorator tracks the number of times we call the recursive function. Make sure the decorator
-# is included on your recursive search function if you change the implementation.
-@countcalls
-def backtracking_search(
-    neighbors: List[List[int]],
-    queue: Set[Tuple[int, int]],
-    domains: List[List[int]],
-    assignment: Dict[int, int],
-) -> Optional[Dict[int, int]]:
-    """Perform backtracking search on CSP using AC3
-
-    Args:
-        neighbors (List[List[int]]): Indices of neighbors for each variable
-        queue (Set[Tuple[int, int]]): Variable constraints; (x, y) indicates x must be consistent with y
-        domains (List[List[int]]): Domains for each variable
-        assignment (Dict[int, int]): Current variable->value assignment 
-
-    Returns:
-        Optional[Dict[int, int]]: Solution or None indicating no solution found
-    """
-    # TODO: Implement the backtracking search algorithm here
-
-    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
-        return assignment
-    
-    variable = return_unassigned(assignment).pop() 
-    for value in domains[variable]:
-        if value_not_conflicting(variable, value, assignment, neighbors):
-            new_assignment  = assignment.copy()
-            new_assignment[variable] = value
-            result = backtracking_search(neighbors, queue, domains, new_assignment)
-            if result:
-                return result
-            new_assignment[variable] = 0 # undo assignment
-    return None # no solution found
-
+ 
 def value_not_conflicting(variable: int, value: int, assignment: Dict[int, int], neighbors: List[List[int]]) -> bool:
     """
     Check if a value assignment is consistent with the current assignment
@@ -220,6 +183,53 @@ def return_unassigned(assignment: Dict[int, int]) -> List[int]:
     return unassigned
 
     
+       
+            
+# The @countcalls decorator tracks the number of times we call the recursive function. Make sure the decorator
+# is included on your recursive search function if you change the implementation.
+@countcalls
+def backtracking_search(
+    neighbors: List[List[int]],
+    queue: Set[Tuple[int, int]],
+    domains: List[List[int]],
+    assignment: Dict[int, int],
+) -> Optional[Dict[int, int]]:
+    """Perform backtracking search on CSP using AC3
+
+    Args:
+        neighbors (List[List[int]]): Indices of neighbors for each variable
+        queue (Set[Tuple[int, int]]): Variable constraints; (x, y) indicates x must be consistent with y
+        domains (List[List[int]]): Domains for each variable
+        assignment (Dict[int, int]): Current variable->value assignment 
+
+    Returns:
+        Optional[Dict[int, int]]: Solution or None indicating no solution found
+    """
+    while queue:
+        Xi, Xj = queue.pop()
+        domain1 = domains[Xi]
+        if revise(Xi, Xj, domains, assignment):
+            if len(domains[Xi]) == 0:
+                return None # no solution found since domain is empty
+            for Xk in neighbors[Xi]: 
+                if Xk != Xj:
+                    queue.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
+        if (len(domain1) != len(domains[Xi])):
+            print("Length of domain before:# %d Length of domain after %d", (len(domain1), len(domains[Xi])))
+
+    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
+        return assignment
+    
+    variable = return_unassigned(assignment).pop() 
+    for value in domains[variable]:
+        if value_not_conflicting(variable, value, assignment, neighbors):
+            new_assignment  = assignment.copy()
+            new_assignment[variable] = value
+            result = backtracking_search(neighbors, queue, domains, new_assignment)
+            if result:
+                return result
+            new_assignment[variable] = 0 # undo assignment
+    return None # no solution found
 
 
 
