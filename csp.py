@@ -143,9 +143,17 @@ def revise(
     revised = False
 
     for value in domains[Xi]:
-        if value in domains[Xj] and Xj in assignment.keys() and (value == assignment[Xj] or len(domains[Xj]) == 1): # if this value is already assigned, or "Value" is the only option for Xj
-            domains[Xi].remove(value)
-            revised = True
+        # Check if Xj is assigned and if the value in Xi's domain conflicts with it
+        if Xj in assignment:
+            if value == assignment[Xj]: 
+                domains[Xi].remove(value)
+                revised = True
+        # If Xj is not assigned, only remove value if it is the only value in Xi's domain 
+        elif len(domains[Xj]) == 1:  
+            if value in domains[Xj]:  
+                domains[Xi].remove(value)
+                revised = True
+
     return revised
     
  
@@ -207,15 +215,13 @@ def backtracking_search(
     """
     while queue:
         Xi, Xj = queue.pop()
-        domain1 = domains[Xi]
         if revise(Xi, Xj, domains, assignment):
             if len(domains[Xi]) == 0:
                 return None # no solution found since domain is empty
             for Xk in neighbors[Xi]: 
                 if Xk != Xj:
                     queue.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
-        if (len(domain1) != len(domains[Xi])):
-            print("Length of domain before:# %d Length of domain after %d", (len(domain1), len(domains[Xi])))
+
 
     if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
         return assignment
