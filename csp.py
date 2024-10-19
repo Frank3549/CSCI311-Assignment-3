@@ -127,7 +127,7 @@ def initialize_queue(all_neighbors: List[List[int]]) -> Set[Tuple[int, int]]:
     
 
 def revise(
-    Xi: int, Xj: int, domains: List[List[int]], assignment: Dict[int, int]
+    Xi: int, Xj: int, domains: List[List[int]], assignment: Dict[int, int], neighbors: List[List[int]]
 ) -> bool:
     """Revise the domain of Xi based on the domain of Xj
 
@@ -213,14 +213,16 @@ def backtracking_search(
     Returns:
         Optional[Dict[int, int]]: Solution or None indicating no solution found
     """
-    while queue:
-        Xi, Xj = queue.pop()
+    queueCopy = queue.copy()
+    while queueCopy:
+        Xi, Xj = queueCopy.pop()
         if revise(Xi, Xj, domains, assignment):
             if len(domains[Xi]) == 0:
+                print("No solution found")
                 return None # no solution found since domain is empty
             for Xk in neighbors[Xi]: 
                 if Xk != Xj:
-                    queue.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
+                    queueCopy.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
 
 
     if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
@@ -281,18 +283,41 @@ def my_backtracking_search(
     domains: List[List[int]],
     assignment: Dict[int, int],
 ) -> Optional[Dict[int, int]]:
-    """Custom backtracking search implementing efficient heuristics
-
-    Args:
-        neighbors (List[List[int]]): Indices of neighbors for each variable
-        queue (Set[Tuple[int, int]]): Variable constraints; (x, y) indicates x must be consistent with y
-        domains (List[List[int]]): Domains for each variable
-        assignment (Dict[int, int]): Current variable->value assignment 
-
-    Returns:
-        Optional[Dict[int, int]]: Solution or None indicating no solution found
     """
-    return None
+    Perform backtracking search on CSP using AC3
+
+        Args:
+            neighbors (List[List[int]]): Indices of neighbors for each variable
+            queue (Set[Tuple[int, int]]): Variable constraints; (x, y) indicates x must be consistent with y
+            domains (List[List[int]]): Domains for each variable
+            assignment (Dict[int, int]): Current variable->value assignment 
+
+        Returns:
+            Optional[Dict[int, int]]: Solution or None indicating no solution found
+    """
+    while queue.copy():
+        Xi, Xj = queue.pop()
+        if revise(Xi, Xj, domains, assignment):
+            if len(domains[Xi]) == 0:
+                return None # no solution found since domain is empty
+            for Xk in neighbors[Xi]: 
+                if Xk != Xj:
+                    queue.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
+
+
+    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
+        return assignment
+    
+    variable = return_unassigned(assignment).pop() 
+    for value in domains[variable]:
+        if value_not_conflicting(variable, value, assignment, neighbors):
+            new_assignment  = assignment.copy()
+            new_assignment[variable] = value
+            result = backtracking_search(neighbors, queue, domains, new_assignment)
+            if result:
+                return result
+            new_assignment[variable] = 0 # undo assignment
+    return None # no solution found
 
 
 
