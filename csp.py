@@ -141,19 +141,27 @@ def revise(
         bool: True if the domain of Xi is revised, False otherwise
     """
     revised = False
+    satisfies_constraint = False
+    values_to_remove = [] # Avoiding mutation while iterating over the domain
 
     for value in domains[Xi]:
-        # Check if Xj is assigned and if the value in Xi's domain conflicts with it
-        if Xj in assignment:
-            if value == assignment[Xj]: 
-                domains[Xi].remove(value)
-                revised = True
-        # If Xj is not assigned, only remove value if it is the only value in Xi's domain 
-        elif len(domains[Xj]) == 1:  
-            if value in domains[Xj]:  
-                domains[Xi].remove(value)
-                revised = True
-
+        if Xj in assignment.keys():
+            satisfies_constraint = value_not_conflicting(Xi, value, assignment, neighbors)
+        else: # Xj is not assigned. Check if there is a value in Xj's domain that satisfies the constraint when Xi is assigned value
+            for value2 in domains[Xj]:  
+                assignment[Xj] = value2
+                if value_not_conflicting(Xi, value, assignment, neighbors):
+                    satisfies_constraint = True 
+                    break
+            assignment.pop(Xj) # undo assignment
+        if not satisfies_constraint:
+            values_to_remove.append(value)
+            revised = True
+        satisfies_constraint = False # reset for next value
+    
+    for value in values_to_remove:
+        domains[Xi].remove(value)
+            
     return revised
     
  
@@ -216,27 +224,26 @@ def backtracking_search(
     queueCopy = queue.copy()
     while queueCopy:
         Xi, Xj = queueCopy.pop()
-        if revise(Xi, Xj, domains, assignment):
+        if revise(Xi, Xj, domains, assignment, neighbors):
             if len(domains[Xi]) == 0:
-                print("No solution found")
                 return None # no solution found since domain is empty
             for Xk in neighbors[Xi]: 
                 if Xk != Xj:
                     queueCopy.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
 
 
-    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
+    if set(assignment.keys()) == set(range(SIDE**2)): # if all variables are assigned
         return assignment
     
     variable = return_unassigned(assignment).pop() 
     for value in domains[variable]:
         if value_not_conflicting(variable, value, assignment, neighbors):
-            new_assignment  = assignment.copy()
-            new_assignment[variable] = value
-            result = backtracking_search(neighbors, queue, domains, new_assignment)
+            new_assignment  = assignment.copy() # make a copy of the assignment to avoid mutation during recursion
+            new_assignment[variable] = value 
+            domains_copy = [domain.copy() for domain in domains]
+            result = backtracking_search(neighbors, queue, domains_copy, new_assignment)
             if result:
-                return result
-            new_assignment[variable] = 0 # undo assignment
+                return result 
     return None # no solution found
 
 
@@ -295,28 +302,29 @@ def my_backtracking_search(
         Returns:
             Optional[Dict[int, int]]: Solution or None indicating no solution found
     """
-    while queue.copy():
-        Xi, Xj = queue.pop()
-        if revise(Xi, Xj, domains, assignment):
+    queueCopy = queue.copy()
+    while queueCopy:
+        Xi, Xj = queueCopy.pop()
+        if revise(Xi, Xj, domains, assignment, neighbors):
             if len(domains[Xi]) == 0:
                 return None # no solution found since domain is empty
             for Xk in neighbors[Xi]: 
                 if Xk != Xj:
-                    queue.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
+                    queueCopy.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
 
 
-    if assignment.keys() == set(range(SIDE**2)): # if all variables are assigned
+    if set(assignment.keys()) == set(range(SIDE**2)): # if all variables are assigned
         return assignment
     
     variable = return_unassigned(assignment).pop() 
     for value in domains[variable]:
         if value_not_conflicting(variable, value, assignment, neighbors):
-            new_assignment  = assignment.copy()
-            new_assignment[variable] = value
-            result = backtracking_search(neighbors, queue, domains, new_assignment)
+            new_assignment  = assignment.copy() # make a copy of the assignment to avoid mutation during recursion
+            new_assignment[variable] = value 
+            domains_copy = [domain.copy() for domain in domains]
+            result = backtracking_search(neighbors, queue, domains_copy, new_assignment)
             if result:
-                return result
-            new_assignment[variable] = 0 # undo assignment
+                return result 
     return None # no solution found
 
 
