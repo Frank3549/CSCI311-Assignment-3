@@ -292,6 +292,7 @@ def my_backtracking_search(
 ) -> Optional[Dict[int, int]]:
     """
     Perform backtracking search on CSP using AC3
+        ***Custom approach: Most constrained are variables are assigned first.***
 
         Args:
             neighbors (List[List[int]]): Indices of neighbors for each variable
@@ -344,10 +345,9 @@ def my_sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
     """
 
     domains = [[val] if val else list(DOMAIN) for val in board]
-    neighbors = []
-    queue = set()
+    neighbors = get_all_neighbors()
+    queue = initialize_queue(neighbors)
 
-    # TODO: Complete the initialization of the neighbors and queue data structures
 
     # Initialize the assignment for any squares with domains of size 1 (e.g., pre-specified squares).
     assignment = {
@@ -360,6 +360,20 @@ def my_sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
     if result is not None:
         result = [result[i] for i in range(SIDE * SIDE)]
     return result, my_backtracking_search.calls
+
+def return_unassigned_minheap(assignment: Dict[int, int], domains: List[List[int]]) -> List[int]:
+    """
+    returns a list of unassigned variables in the assignment, sorted by the number of values in their domain
+    
+    Args: Assignment (Dict[int, int]): Current variable->value assignment
+    
+    Returns: List[int]: List of unassigned variables (their indices)
+    """
+    unassigned: List[int] = [] 
+    for variable in range(SIDE**2):
+        if variable not in assignment.keys(): 
+            unassigned.append(variable)
+    return unassigned
 
 
 if __name__ == "__main__":
