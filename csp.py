@@ -5,7 +5,14 @@ Full Name: Frank Bautista
 
 Brief description of my solver:
 
-TODO Briefly describe your solver. Did it perform better than the AC3 solver? If so, why do you think so? If not, can you think of any ways to improve it?
+My solver used backtracking with AC3 however when choosing a variable, 
+instead of it being in order by default I used a min heap to choose the most 
+constrained variable first. This however did not perform better than simply grabbing 
+unassigned variables in order. Why? Honestly im not 100% sure. My original theory was that this 
+would reduce the number of recursion attempts by failing faster. It seems that it may be increasing 
+recursion attempts as it somehow takes longer to fail? Maybe my implementation is wrong, but i have isolated
+the issue to the min heap. 
+
 """
 
 import argparse, time, heapq
@@ -321,15 +328,15 @@ def my_backtracking_search(
     unassigned_minheap = return_unassigned_minheap(assignment, domains)
     variable = heapq.heappop(unassigned_minheap)[1] # get the most constrained variable
 
-    for value in domains[variable]:
+    for value in domains[variable]: 
         if value_not_conflicting(variable, value, assignment, neighbors):
             new_assignment  = assignment.copy() # make a copy of the assignment to avoid mutation during recursion
             new_assignment[variable] = value 
             domains_copy = [domain.copy() for domain in domains]
-            result = backtracking_search(neighbors, queue, domains_copy, new_assignment)
+            result = my_backtracking_search(neighbors, queue, domains_copy, new_assignment)
             if result:
                 return result 
-    return None 
+    return None
 
 
 
