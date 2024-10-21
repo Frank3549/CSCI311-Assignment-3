@@ -8,9 +8,10 @@ Brief description of my solver:
 TODO Briefly describe your solver. Did it perform better than the AC3 solver? If so, why do you think so? If not, can you think of any ways to improve it?
 """
 
-import argparse, time
+import argparse, time, heapq
 from functools import wraps
 from typing import Dict, List, Optional, Set, Tuple
+
 
 # You are welcome to add constants, but do not modify the pre-existing constants
 
@@ -313,11 +314,13 @@ def my_backtracking_search(
                 if Xk != Xj:
                     queueCopy.add((Xk, Xi)) # given further constraints to Xi, see if it affects its neighbors
 
-
-    if set(assignment.keys()) == set(range(SIDE**2)): # if all variables are assigned
+    # if all variables are assigned
+    if set(assignment.keys()) == set(range(SIDE**2)):
         return assignment
     
-    variable = return_unassigned(assignment).pop() 
+    unassigned_minheap = return_unassigned_minheap(assignment, domains)
+    variable = heapq.heappop(unassigned_minheap)[1] # get the most constrained variable
+
     for value in domains[variable]:
         if value_not_conflicting(variable, value, assignment, neighbors):
             new_assignment  = assignment.copy() # make a copy of the assignment to avoid mutation during recursion
@@ -326,7 +329,7 @@ def my_backtracking_search(
             result = backtracking_search(neighbors, queue, domains_copy, new_assignment)
             if result:
                 return result 
-    return None # no solution found
+    return None 
 
 
 
@@ -361,7 +364,7 @@ def my_sudoku(board: List[int]) -> Tuple[Optional[List[int]], int]:
         result = [result[i] for i in range(SIDE * SIDE)]
     return result, my_backtracking_search.calls
 
-def return_unassigned_minheap(assignment: Dict[int, int], domains: List[List[int]]) -> List[int]:
+def return_unassigned_minheap(assignment: Dict[int, int], domains: List[List[int]]) -> List[Tuple[int, int]]:
     """
     returns a list of unassigned variables in the assignment, sorted by the number of values in their domain
     
@@ -369,10 +372,10 @@ def return_unassigned_minheap(assignment: Dict[int, int], domains: List[List[int
     
     Returns: List[int]: List of unassigned variables (their indices)
     """
-    unassigned: List[int] = [] 
+    unassigned: List[Tuple[int, int]] = []  #(number of values in domain, variable index)
     for variable in range(SIDE**2):
         if variable not in assignment.keys(): 
-            unassigned.append(variable)
+          heapq.heappush(unassigned, (len(domains[variable]), variable))  
     return unassigned
 
 
