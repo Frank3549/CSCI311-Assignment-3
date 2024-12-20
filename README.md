@@ -1,4 +1,4 @@
-## Running the skeleton program
+## Running the program
 
 Executing `csp.py` will run backtracking search with AC3 on an "easy" board by default.  You can change the algorithm, the difficulty level, the number of trials and specify the board by changing the optional arguments shown below.
 
